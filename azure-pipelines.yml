@@ -36,7 +36,6 @@ jobs:
     pathtoPublish: '$(System.DefaultWorkingDirectory)'
     artifactName: 'drop'
 
-
   - powershell: |
       Invoke-WebRequest -Uri 'https://download.microsoft.com/download/9/2/2/922C6E5A-8708-4B5C-97D5-705D83A89FBB/sqlpackage-linux-x64-latest.tar.gz' -OutFile '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz'
     displayName: 'Download sqlpackage'
