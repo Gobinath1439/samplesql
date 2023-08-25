@@ -12,12 +12,8 @@ pr: none
 pool:
   vmImage: 'windows-latest'
 
-variables:
-  - group: 'AzureSQLConnection'
-  - name: 'dacpacFilePath'
-    value: '$(System.DefaultWorkingDirectory)/sample-db/bin/Release/sample-db.dacpac'
-
 jobs:
+
 - job: DeployDatabaseChanges
   steps:
   - task: UseDotNet@2
