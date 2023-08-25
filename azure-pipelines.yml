@@ -38,9 +38,9 @@ jobs:
   
 
   - powershell: |
-      Expand-Archive -Path '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz' -DestinationPath '$(System.DefaultWorkingDirectory)/sqlpackage'
+    Expand-Archive -Path '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz' -DestinationPath '$(System.DefaultWorkingDirectory)/sqlpackage'
     displayName: 'Extract sqlpackage'
-    
+
   - script: |
       $(System.DefaultWorkingDirectory)/sqlpackage/sqlpackage /a:Publish /sf:$(dacpacFilePath) /tsn:$(testserver-12.database.windows.net).database.windows.net /tdn:$(sample-db) /tu:$(Admin24) /tp:$(My_localuser) /p:CommandTimeout=1200
     displayName: 'Deploy database changes'
