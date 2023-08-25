@@ -12,14 +12,18 @@ pr: none
 pool:
   vmImage: 'windows-latest'
 
-jobs:
+variables:
+  - group: 'AzureSQLConnection'
+  - name: 'dacpacFilePath'
+    value: '$(System.DefaultWorkingDirectory)/sample-db/bin/Release/sample-db.dacpac'
 
+jobs:
 - job: DeployDatabaseChanges
   steps:
   - task: UseDotNet@2
     inputs:
       packageType: 'sdk'
-      version: '3.1.x' 
+      version: '3.1.x'
 
   - task: DownloadBuildArtifacts@0
     inputs:
@@ -33,18 +37,11 @@ jobs:
       artifact: 'drop'
       publishLocation: 'pipeline'
 
-  - task: DownloadFile@1
-    inputs:
-      sourceUrl: 'https://download.microsoft.com/download/9/2/2/922C6E5A-8708-4B5C-97D5-705D83A89FBB/sqlpackage-linux-x64-latest.tar.gz'
-      targetPath: '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz'
+  - powershell: |
+      Invoke-WebRequest -Uri 'https://download.microsoft.com/download/9/2/2/922C6E5A-8708-4B5C-97D5-705D83A89FBB/sqlpackage-linux-x64-latest.tar.gz' -OutFile '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz'
+    displayName: 'Download sqlpackage'
 
-  - task: ExtractFiles@1
-    inputs:
-      archiveFilePatterns: '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz'
-      destinationFolder: '$(System.DefaultWorkingDirectory)/sqlpackage'
-
-  - script: |
-      tar -xzvf $(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz -C $(System.DefaultWorkingDirectory)/sqlpackage
+  - powershell: Expand-Archive -Path '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz' -DestinationPath '$(System.DefaultWorkingDirectory)/sqlpackage'
     displayName: 'Extract sqlpackage'
 
   - script: |
@@ -54,4 +51,3 @@ jobs:
   - powershell: |
       # Additional tasks or cleanup if needed
     displayName: 'Additional tasks'
-
