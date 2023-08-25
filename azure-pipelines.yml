@@ -35,6 +35,7 @@ jobs:
   inputs:
     pathtoPublish: '$(System.DefaultWorkingDirectory)'
     artifactName: 'drop'
+  
 
   - powershell: Expand-Archive -Path '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz' -DestinationPath '$(System.DefaultWorkingDirectory)/sqlpackage'
     displayName: 'Extract sqlpackage'
