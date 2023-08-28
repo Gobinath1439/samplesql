@@ -4,47 +4,37 @@
 # https://aka.ms/yaml
 
 
-trigger:
-- master
-
-pr: none
-
-pool:
-  vmImage: 'windows-latest'
-
 variables:
-  - group: 'AzureSQLConnection'
-  - name: 'dacpacFilePath'
-    value: '$(System.DefaultWorkingDirectory)/sample-db/bin/Release/sample-db.dacpac'
+  AzureSubscription: '<Visual Studio Enterprise Subscription – MPN(9aa09752-a676-4df1-8cf9-02cefca9f960)>'
+  ResourceGroupName: '<New_Rg1>'
+  ServerName: '<testserver-12.database.windows.net>'
+  ServerFqdn: '<DATABASE_FQDN>'
+  DatabaseName: '<sample-db>'
+  AdminUser: '<Admin24>'
+  AdminPassword: '<My_localuser>'
+  SQLFile: '<C:\Users\GOPINA~1\AppData\Local\Temp\~vs1DAD.sql$(Build.SourcesDirectory)>'
 
-jobs:
-- job: DeployDatabaseChanges
-  steps:
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '3.1.x'
-
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'current'
-      artifactName: 'drop'
-      downloadPath: '$(System.DefaultWorkingDirectory)'
-
-  - task: PublishBuildArtifacts@1
+steps:
+- task: AzurePowerShell@5
+  displayName: 'Azure PowerShell script'
   inputs:
-    pathtoPublish: '$(System.DefaultWorkingDirectory)'
-    artifactName: 'drop'
-  
+    azureSubscription: 'Visual Studio Enterprise Subscription – MPN(9aa09752-a676-4df1-8cf9-02cefca9f960)'
+    ScriptType: 'filePath'
+    ScriptPath: '$(Build.SourcesDirectory)\scripts\SetAzureFirewallRule.ps1'
+    ScriptArguments: '-ServerName $(testserver-12.database.windows.net) -ResourceGroupName $(New_Rg1)'
+    azurePowerShellVersion: 'LatestVersion'
 
-  - powershell: |
-      Expand-Archive -Path '$(System.DefaultWorkingDirectory)/sqlpackage-linux-x64-latest.tar.gz' -DestinationPath '$(System.DefaultWorkingDirectory)/sqlpackage'
-    displayName: 'Extract sqlpackage'
+- task: CmdLine@2
+  displayName: Run Sqlcmd
+  inputs:
+    filename: sqlcmd
+    arguments: '-S $(ServerFqdn) -U $(AdminUser) -P $(AdminPassword) -d $(DatabaseName) -i $(SQLFile)'
 
-  - script: |
-      $(System.DefaultWorkingDirectory)/sqlpackage/sqlpackage /a:Publish /sf:$(dacpacFilePath) /tsn:$(testserver-12.database.windows.net).database.windows.net /tdn:$(sample-db) /tu:$(Admin24) /tp:$(My_localuser) /p:CommandTimeout=1200
-    displayName: 'Deploy database changes'
-
-  - powershell: |
-      # Additional tasks or cleanup if needed
-    displayName: 'Additional tasks'
+- task: AzurePowerShell@5
+  displayName: 'Azure PowerShell script'
+  inputs:
+    azureSubscription: '$(Visual Studio Enterprise Subscription – MPN(9aa09752-a676-4df1-8cf9-02cefca9f960))'
+    ScriptType: filePath
+    ScriptPath: '$(Build.SourcesDirectory)\scripts\RemoveAzureFirewallRule.ps1'
+    ScriptArguments: '-ServerName $(testserver-12.database.windows.net) -ResourceGroupName $(New_Rg1)'
+    azurePowerShellVersion: LatestVersion
